@@ -21,16 +21,13 @@ when ODIN_OS == .Windows {
 
     // TODO: apparently 8 on MSVC but im not really sure
     LongDoubleByteSize :: 8
-} else {
-	#assert(false, "Unsupported odin-magick OS")
+} else when ODIN_OS == .Linux {
+   foreign import lib {"system:MagickCore-7.Q16HDRI", "system:MagickWand-7.Q16HDRI"} 
 
-    // MagickCore/thread-private.h line 43
     MagickMutexType :: c.size_t
-
-    // MagickCore/thread_.h line 31 (This is supposed to be a pid_t?)
     MagickThreadType :: c.int
 
-    // TODO: verify this is correct
+     // TODO: verify this is correct
     when ODIN_ARCH == .amd64 {
         LongDoubleByteSize :: 16
     } else when ODIN_ARCH == .i386 {
@@ -38,6 +35,8 @@ when ODIN_OS == .Windows {
     } else {
         #assert(false, "Unsupported odin-magick Architecture")
     }
+} else {
+	#assert(false, "Unsupported odin-magick OS")
 }
 
 /* 
