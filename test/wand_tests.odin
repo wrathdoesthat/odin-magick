@@ -5,14 +5,14 @@ import "core:log"
 import "core:fmt"
 import "core:c"
 import mgck "../"
+import "core:image/jpeg"
 
 m_exception :: proc(t: ^testing.T, wand: ^mgck.MagickWand, loc := #caller_location) {
     exception : mgck.ExceptionType
     out := mgck.MagickGetException(wand, &exception)
 
     if exception != .UndefinedException {
-        log.log(.Error, out)
-        log.log(.Error, exception)
+        log.log(.Error, exception,  out)
         mgck.MagickRelinquishMemory(&out)
         testing.fail(t, loc)
     }
@@ -32,7 +32,7 @@ wand_logo_convert_test :: proc(t: ^testing.T) {
     mgck.MagickReadImage(wand, "./res/odin.png")
     m_exception(t, wand)
 
-    mgck.MagickWriteImage(wand, "./out/logo_resized.jpg")
+    mgck.MagickWriteImage(wand, "./out/logo_reencoded.jpg")
     m_exception(t, wand)
 }
 
@@ -101,4 +101,3 @@ wand_floodfill_test :: proc(t: ^testing.T) {
     mgck.MagickWriteImage(wand, "./out/floodfilled_bill.png")
     m_exception(t, wand)
 }
-

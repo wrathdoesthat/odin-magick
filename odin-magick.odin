@@ -67,6 +67,16 @@ stat :: _stat64
 MagickPathExtent: c.int: 4096
 
 // MagickCore/Magick-type.h
+MagickFloatType :: c.float
+MagickOffsetType :: c.longlong
+MagickSizeType  :: c.ulonglong
+MagickDoubleType :: c.double
+MagickRealType  :: MagickDoubleType
+
+MagickStatusType :: c.uint
+
+Quantum :: MagickFloatType
+
 ClassType :: enum c.int {
 	UndefinedClass,
 	DirectClass,
@@ -77,14 +87,6 @@ MagickBooleanType :: enum c.int {
 	MagickFalse = 0,
 	MagickTrue  = 1,
 }
-
-MagickFloatType :: c.float
-MagickOffsetType :: c.longlong
-MagickSizeType  :: c.ulonglong
-MagickDoubleType :: c.double
-MagickRealType  :: MagickDoubleType
-
-Quantum :: MagickFloatType
 
 // MagickCore/pixel.h
 MaxPixelChannels :: 64
@@ -517,7 +519,6 @@ ChannelFeatures :: struct {
     measure_of_correlation_2: [4]c.double,
     maximum_correlation_coefficient: [4]c.double
 }
-
 
 // MagickCore/compress.c
 Ascii85Info :: struct {
@@ -973,6 +974,49 @@ ExceptionInfo :: struct {
     relinquish: MagickBooleanType,
     semaphore: ^SemaphoreInfo,
     signature: c.size_t,
+}
+
+ErrorHandler :: #type proc(ExceptionType, cstring, cstring)
+FatalErrorHandler :: #type proc(ExceptionType, cstring, cstring)
+WarningHandler :: #type proc(ExceptionType, cstring, cstring)
+
+// MagickCore/magick.h
+DecodeImageHandler :: #type proc(^ImageInfo, ^ExceptionInfo) -> Image
+EncodeImageHandler :: #type proc(^ImageInfo, ^Image, ^ExceptionInfo) -> MagickBooleanType
+IsImageFormatHandler :: #type proc(cstring, c.size_t) -> MagickBooleanType
+
+MagickFormatType :: enum c.int {
+    UndefinedFormatType,
+    ImplicitFormatType,
+    ExplicitFormatType
+}
+
+MagickInfoFlag :: enum c.int {
+    CoderNoFlag = 0x0000,
+    CoderAdjoinFlag = 0x0001,
+    CoderBlobSupportFlag = 0x0002,
+    CoderDecoderThreadSupportFlag = 0x0004,
+    CoderEncoderThreadSupportFlag = 0x0008,
+    CoderEndianSupportFlag = 0x0010,
+    CoderRawSupportFlag = 0x0020,
+    CoderSeekableStreamFlag = 0x0040, /* deprecated */
+    CoderStealthFlag = 0x0080,
+    CoderUseExtensionFlag = 0x0100,
+    CoderDecoderSeekableStreamFlag = 0x0200,
+    CoderEncoderSeekableStreamFlag = 0x0400 
+}
+
+MagickInfo :: struct {
+    name, description, version, mime_type, note, magick_module : cstring,
+    decoder: ^DecodeImageHandler,
+    encoder: ^EncodeImageHandler,
+    image_info: ^ImageInfo,
+    magick: ^IsImageFormatHandler,
+    format_type: MagickFormatType,
+    flags: MagickStatusType,
+    semaphore: ^SemaphoreInfo,
+    signature: c.size_t,
+    client_data: rawptr
 }
 
 // MagickCore/type.h
@@ -1580,13 +1624,70 @@ MagickWand :: struct {
     signature: c.size_t
 }
 
-// MagickWand functions
 @(default_calling_convention="c")
 foreign lib {
     // MagickCore
+    // MagickCore/magick.h
+    GetMagickList :: proc(pattern: cstring, number_formats: ^c.size_t, exception: ^ExceptionInfo) -> [^]^c.char ---
+
+    GetMagickDescription :: proc(magick_info: ^MagickInfo) -> cstring ---
+    GetMagickMimeType :: proc(magick_info: ^MagickInfo) -> cstring ---
+    GetMagickModuleName :: proc(magick_info: ^MagickInfo) -> cstring ---
+    GetMagickName :: proc(magick_info: ^MagickInfo) -> cstring ---
+
+    GetImageDecoder :: proc(magick_info: ^MagickInfo) -> ^DecodeImageHandler ---
+    
+    GetImageEncoder :: proc(magick_info: ^MagickInfo) -> ^EncodeImageHandler ---
+
+    GetMagickPrecision :: proc() -> c.int ---
+    SetMagickPrecision :: proc(precision: c.int) -> c.int ---
+
+    GetImageMagick :: proc(magick: ^c.uchar, length: c.size_t, format: cstring) -> MagickBooleanType ---
+    GetMagickAdjoin :: proc(magick_info: ^MagickInfo) -> MagickBooleanType ---
+    GetMagickBlobSupport :: proc(magick_info: ^MagickInfo) -> MagickBooleanType ---
+    GetMagickDecoderSeekableStream :: proc(magick_info: ^MagickInfo) -> MagickBooleanType ---
+    GetMagickDecoderThreadSupport :: proc(magick_info: ^MagickInfo) -> MagickBooleanType ---
+    GetMagickEncoderSeekableStream :: proc(magick_info: ^MagickInfo) -> MagickBooleanType ---
+    GetMagickEncoderThreadSupport :: proc(magick_info: ^MagickInfo) -> MagickBooleanType ---
+    GetMagickEndianSupport :: proc(magick_info: ^MagickInfo) -> MagickBooleanType ---
+    GetMagickRawSupport :: proc(magick_info: ^MagickInfo) -> MagickBooleanType ---
+    GetMagickStealth :: proc(magick_info: ^MagickInfo) -> MagickBooleanType ---
+    GetMagickUseExtension :: proc(magick_info: ^MagickInfo) -> MagickBooleanType ---
+    IsMagickCoreInstantiated :: proc() -> MagickBooleanType ---
+    RegisterMagickInfo :: proc(magick_info: ^MagickInfo) -> MagickBooleanType ---
+    UnregisterMagickInfo :: proc(name: cstring) -> MagickBooleanType ---
+
+    GetMagickInfo :: proc(name: cstring, exception: ^ExceptionInfo) -> ^MagickInfo ---
+    GetMagickInfoList :: proc(pattern: cstring, number_formats: ^c.size_t, exception: ^ExceptionInfo) -> [^]^MagickInfo ---
+
+    AcquireMagickInfo :: proc(magick_module: cstring, name: cstring, description: cstring) -> ^MagickInfo ---
+
+    MagickCoreGenesis :: proc(path: cstring, establish_signal_handlers: MagickBooleanType) ---
+    MagickCoreTerminus :: proc() ---
+
+    // MagickCore/exception.h
+    GetExceptionMessage :: proc(error: c.int) -> cstring ---
+    GetLocaleExceptionMessage :: proc(severity: ExceptionType, tag: cstring) -> cstring ---
+
+    SetErrorHandler :: proc(handler: ErrorHandler) -> ErrorHandler ---
+
+    AcquireExceptionInfo :: proc() -> ^ExceptionInfo ---
+    CloneExceptionInfo :: proc(exception: ^ExceptionInfo) ---
+    DestroyExceptionInfo :: proc(exception: ^ExceptionInfo) ---
+
+    ThrowException :: proc(exception: ^ExceptionInfo, severity: ExceptionType, reason: cstring, description: cstring) -> MagickBooleanType ---
+    ThrowMagickExceptionList :: proc(exception: ^ExceptionInfo, module: cstring, function: cstring, line: c.size_t, severity: ExceptionType, tag: cstring, format: cstring, operands: c.va_list) -> MagickBooleanType --- 
+    // TODO: bind ThrowMagickException
+
+    CatchException :: proc(exception: ^ExceptionInfo) ---
+    ClearMagickException :: proc(exception: ^ExceptionInfo) ---
+    InheritException :: proc(exception: ^ExceptionInfo, relative: ^ExceptionInfo) ---
+    MagickError :: proc(error: ExceptionType, reason: cstring, description: cstring) ---
+    MagickFatalError :: proc(error: ExceptionType, reason: cstring, description: cstring) ---
+    MagickWarning :: proc(error: ExceptionType, reason: cstring, description: cstring) ---
+
     // MagickCore/option.h
     ParseChannelOption :: proc(channels: cstring) -> c.ssize_t --- 
-
 
     // MagickWand
     // MagickWand/MagickWand.h
@@ -1637,11 +1738,11 @@ foreign lib {
     PixelGetPixel :: proc(wand: ^PixelWand) -> PixelInfo ---
 
     ClonePixelWand :: proc(wand: ^PixelWand) -> ^PixelWand ---
-    ClonePixelWands :: proc(wands: ^^PixelWand, number_wands: c.size_t) -> ^^PixelWand ---
+    ClonePixelWands :: proc(wands: [^]^PixelWand, number_wands: c.size_t) -> [^]^PixelWand ---
     DestroyPixelWand :: proc(wand: ^PixelWand) -> ^PixelWand ---
-    DestroyPixelWands :: proc(wands: ^^PixelWand, number_wands: c.size_t) -> ^^PixelWand ---
+    DestroyPixelWands :: proc(wands: [^]^PixelWand, number_wands: c.size_t) -> [^]^PixelWand ---
     NewPixelWand :: proc() -> ^PixelWand ---
-    NewPixelWands :: proc(number_wands: c.size_t) -> ^^PixelWand ---
+    NewPixelWands :: proc(number_wands: c.size_t) -> [^]^PixelWand ---
 
     PixelGetAlphaQuantum :: proc(wand: ^PixelWand) -> Quantum ---
     PixelGetBlackQuantum :: proc(wand: ^PixelWand) -> Quantum ---
@@ -1760,7 +1861,7 @@ foreign lib {
     MagickCompositeImage :: proc(wand: ^MagickWand, source_wand: ^MagickWand, compose: CompositeOperator, clip_to_self: MagickBooleanType, x: c.ssize_t, y: c.ssize_t) -> MagickBooleanType ---
     MagickCompositeImageGravity :: proc(wand: ^MagickWand, source_wand: ^MagickWand, compose: CompositeOperator, gravity: GravityType) -> MagickBooleanType ---
     MagickCompositeLayers :: proc(wand: ^MagickWand, source_wand: ^MagickWand, compose: CompositeOperator, x: c.ssize_t, y: c.ssize_t) -> MagickBooleanType ---
-    MagickConnectedComponentsImage :: proc(wand: ^MagickWand, connectivity: c.size_t, objects: ^^CCObjectInfo) -> MagickBooleanType --- 
+    MagickConnectedComponentsImage :: proc(wand: ^MagickWand, connectivity: c.size_t, objects: [^]^CCObjectInfo) -> MagickBooleanType --- 
     // map_ is normally named map but thats a reserved keyword
     MagickConstituteImage :: proc(wand: ^MagickWand, columns: c.size_t, rows: c.size_t, map_: cstring, storage: StorageType, pixels: rawptr) -> MagickBooleanType ---
     MagickContrastImage :: proc(wand: ^MagickWand, sharpen: MagickBooleanType) -> MagickBooleanType ---
@@ -1978,7 +2079,7 @@ foreign lib {
 
     MagickGetImageOrientation :: proc(wand: ^MagickWand) -> OrientationType ---
 
-    MagickGetImageHistogram :: proc(wand: ^MagickWand, number_colors: ^c.size_t) -> ^^PixelWand ---
+    MagickGetImageHistogram :: proc(wand: ^MagickWand, number_colors: ^c.size_t) -> [^]^PixelWand ---
 
     MagickGetImageRenderingIntent :: proc(wand: ^MagickWand) -> RenderingIntent ---
 
