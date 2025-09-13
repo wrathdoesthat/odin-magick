@@ -64,7 +64,7 @@ _stat64 :: struct {
 stat :: _stat64
 
 // MagickWand/method-attribute.h
-MagickPathExtent: c.int: 4096
+MagickPathExtent : c.int : 4096
 
 // MagickCore/Magick-type.h
 MagickFloatType :: c.float
@@ -700,6 +700,22 @@ CompositeOperator :: enum c.int {
     RMSECompositeOp,
     SaliencyBlendCompositeOp,
     SeamlessBlendCompositeOp
+}
+
+// MagickCore/resource_.h
+ResourceType :: enum c.int {
+    UndefinedResource,
+    AreaResource,
+    DiskResource,
+    FileResource,
+    HeightResource,
+    MapResource,
+    MemoryResource,
+    ThreadResource,
+    ThrottleResource,
+    TimeResource,
+    WidthResource,
+    ListLengthResource
 }
 
 // MagickCore/distort.h
@@ -2099,6 +2115,106 @@ foreign lib {
     MagickGetImageBlob :: proc(wand: ^MagickWand, blob: rawptr) -> ^c.uchar ---
     MagickGetImagesBlob :: proc(wand: ^MagickWand, blob: rawptr) -> ^c.uchar ---
 
-    MagickGetVirtualPixelMethod ::  proc(wand: ^MagickWand) -> VirtualPixelMethod ---
-    MagickSetVirtualPixelMethod ::  proc(wand: ^MagickWand, method: VirtualPixelMethod) -> VirtualPixelMethod ---
+    MagickGetVirtualPixelMethod :: proc(wand: ^MagickWand) -> VirtualPixelMethod ---
+    MagickSetVirtualPixelMethod :: proc(wand: ^MagickWand, method: VirtualPixelMethod) -> VirtualPixelMethod ---
+
+    // MagickWand/magick-property.h
+    MagickGetFilename :: proc(wand: ^MagickWand) -> cstring ---
+    MagickGetFormat :: proc(wand: ^MagickWand) -> cstring ---
+    MagickGetFont :: proc(wand: ^MagickWand) ->  cstring ---
+    MagickGetHomeURL :: proc() -> cstring ---
+    MagickGetImageArtifact :: proc(wand: ^MagickWand, artifact: cstring) -> cstring ---
+    MagickGetImageArtifacts :: proc(wand: ^MagickWand, artifact: cstring, number_artifacts: ^c.size_t) -> [^]cstring ---
+    MagickGetImageProfiles :: proc(wand: ^MagickWand, pattern: cstring, number_profiles: ^c.size_t) -> [^]cstring ---
+    MagickGetImageProperty :: proc(wand: ^MagickWand, property: cstring) -> cstring ---
+    MagickGetImageProperties :: proc(wand: ^MagickWand, pattern: cstring, number_properties: ^c.size_t) -> [^]cstring ---
+    MagickGetOption :: proc(wand: ^MagickWand, key: cstring) -> cstring ---
+    MagickGetOptions :: proc(wand: ^MagickWand, pattern: cstring, number_options: ^c.size_t) -> [^]cstring ---
+    // these ones have their bodies in magick-wand.c not magick-property.h
+    MagickQueryConfigureOption :: proc(option: cstring) -> cstring ---
+    MagickQueryConfigureOptions :: proc(pattern: cstring, number_options: ^c.size_t) -> [^]cstring ---
+    MagickQueryFonts :: proc(pattern: cstring, number_fonts: ^c.size_t) -> [^]cstring ---
+    MagickQueryFormats:: proc(pattern: cstring, number_fonts: ^c.size_t) -> [^]cstring ---
+
+    MagickGetColorspace :: proc(wand: ^MagickWand) -> ColorspaceType ---
+    
+    MagickGetCompression :: proc(wand: ^MagickWand) -> CompressionType ---
+
+    MagickGetCopyright :: proc() -> cstring ---
+    MagickGetPackageName :: proc() -> cstring ---
+    MagickGetQuantumDepth :: proc(depth: ^c.size_t) -> cstring ---
+    MagickGetQuantumRange :: proc(range: ^c.size_t) -> cstring ---
+    MagickGetReleaseDate :: proc() -> cstring ---
+    MagickGetVersion :: proc(version: ^c.size_t) -> cstring ---
+
+    MagickGetPointSize :: proc(wand: ^MagickWand) -> c.double ---
+    MagickGetSamplingFactors :: proc(wand: ^MagickWand, number_factors: ^c.size_t) -> ^c.double ---
+    MagickQueryFontMetrics :: proc(wand: ^MagickWand, drawing_wand: ^DrawingWand, text: cstring) -> ^c.double ---
+    MagickQueryMultilineFontMetrics :: proc(wand: ^MagickWand, drawing_wand: ^DrawingWand, text: cstring) -> ^c.double ---
+
+    MagickGetFilter :: proc(wand: ^MagickWand) -> FilterType ---
+
+    MagickGetGravity :: proc(wand: ^MagickWand) -> GravityType ---
+
+    MagickGetType :: proc(wand: ^MagickWand) -> ImageType ---
+
+    MagickGetInterlaceScheme :: proc(wand: ^MagickWand) -> InterlaceType ---
+
+    MagickGetInterpolateMethod :: proc(wand: ^MagickWand) -> PixelInterpolateMethod ---
+
+    MagickGetOrientation :: proc(wand: ^MagickWand) -> OrientationType ---
+
+    MagickDeleteImageArtifact :: proc(wand: ^MagickWand, artifact: cstring) -> MagickBooleanType ---
+    MagickDeleteImageProperty :: proc(wand: ^MagickWand, property: cstring) -> MagickBooleanType ---
+    MagickDeleteOption :: proc(wand: ^MagickWand, option: cstring) -> MagickBooleanType ---
+    MagickGetAntialias :: proc(wand: ^MagickWand) -> MagickBooleanType ---
+    MagickGetPage :: proc(wand: ^MagickWand, width: ^c.size_t, height: ^c.size_t, x: ^c.ssize_t, y: ^c.ssize_t) -> MagickBooleanType ---
+    MagickGetResolution :: proc(wand: ^MagickWand, x: ^c.double, y: ^c.double) -> MagickBooleanType ---
+    MagickGetSize :: proc(wand: ^MagickWand, columns: ^c.size_t, rows: ^c.size_t) -> MagickBooleanType ---
+    MagickGetSizeOffset :: proc(wand: ^MagickWand, offset: ^c.ssize_t) -> MagickBooleanType ---
+    MagickProfileImage :: proc(wand: ^MagickWand, name: cstring, profile: rawptr, length: c.size_t) -> MagickBooleanType ---
+    MagickSetAntialias :: proc(wand: ^MagickWand, antialias: MagickBooleanType) -> MagickBooleanType ---
+    MagickSetBackgroundColor :: proc(wand: ^MagickWand, background: ^PixelWand) -> MagickBooleanType ---
+    MagickSetColorspace :: proc(wand: ^MagickWand, colorspace: ColorspaceType) -> MagickBooleanType ---
+    MagickSetCompression :: proc(wand: ^MagickWand, compression: CompressionType) -> MagickBooleanType ---
+    MagickSetCompressionQuality :: proc(wand: ^MagickWand, quality: c.size_t) -> MagickBooleanType ---
+    MagickSetDepth :: proc(wand: ^MagickWand, depth: c.size_t) -> MagickBooleanType ---
+    MagickSetExtract :: proc(wand: ^MagickWand, geometry: cstring) -> MagickBooleanType ---
+    MagickSetFilename :: proc(wand: ^MagickWand, filename: cstring) -> MagickBooleanType ---
+    MagickSetFilter :: proc(wand: ^MagickWand, type: FilterType) -> MagickBooleanType ---
+    MagickSetFormat :: proc(wand: ^MagickWand, format: cstring) -> MagickBooleanType ---
+    MagickSetFont :: proc(wand: ^MagickWand, font: cstring) -> MagickBooleanType ---
+    MagickSetGravity :: proc(wand: ^MagickWand, type: GravityType) -> MagickBooleanType ---
+    MagickSetImageArtifact :: proc(wand: ^MagickWand, artifact: cstring, value: cstring) -> MagickBooleanType ---
+    MagickSetImageProfile :: proc(wand: ^MagickWand, name: cstring, profile: rawptr, length: c.size_t) -> MagickBooleanType ---
+    MagickSetImageProperty :: proc(wand: ^MagickWand, property: cstring, value: cstring) -> MagickBooleanType ---
+    MagickSetInterlaceScheme :: proc(wand: ^MagickWand, interlace_scheme: InterlaceType) -> MagickBooleanType ---
+    MagickSetInterpolateMethod :: proc(wand: ^MagickWand, method: PixelInterpolateMethod) -> MagickBooleanType ---
+    MagickSetOption :: proc(wand: ^MagickWand, value: cstring) -> MagickBooleanType ---
+    MagickSetOrientation :: proc(wand: ^MagickWand, orientation: OrientationType) -> MagickBooleanType ---
+    MagickSetPage :: proc(wand: ^MagickWand, width: c.size_t, height: c.size_t, x: c.ssize_t, y: c.ssize_t) -> MagickBooleanType ---
+    MagickSetPassphrase :: proc(wand: ^MagickWand, passphrase: cstring) -> MagickBooleanType ---
+    MagickSetPointsize :: proc(wand: ^MagickWand, pointsize: c.double) -> MagickBooleanType ---
+    MagickSetResolution :: proc(wand: ^MagickWand, x_resolution: c.double, y_resolution: c.double) -> MagickBooleanType ---
+    MagickSetResourceLimit :: proc(type: ResourceType) -> MagickBooleanType ---
+    MagickSetSamplingFactors :: proc(wand: ^MagickWand, number_factors: c.size_t, sampling_factors: ^c.double) -> MagickBooleanType ---
+    MagickSetSecurityPolicy :: proc(wand: ^MagickWand, policy: cstring) -> MagickBooleanType ---
+    MagickSetSize :: proc(wand: ^MagickWand, columns: c.size_t, rows: c.size_t) -> MagickBooleanType ---
+    MagickSetSizeOffset :: proc(wand: ^MagickWand, columns: c.size_t, rows: c.size_t, offset: c.ssize_t) -> MagickBooleanType ---
+
+    MagickSetProgressMonitor :: proc(wand: ^MagickWand, progress_monitor: MagickProgressMonitor, client_data: rawptr) -> MagickProgressMonitor ---
+
+    MagickGetResource :: proc(type: ResourceType) -> MagickSizeType ---
+    MagickGetResourceLimit :: proc(type: ResourceType) -> MagickSizeType ---
+
+    MagickGetBackgroundColor :: proc(wand: ^MagickWand) -> ^PixelWand ---
+
+    MagickGetOrientationType :: proc(wand: ^MagickWand) -> OrientationType ---
+
+    MagickGetCompressionQuality :: proc(wand: ^MagickWand) -> c.size_t ---
+
+    MagickGetImageProfile :: proc(wand: ^MagickWand, name: cstring, length: ^c.size_t) -> ^c.uchar ---
+    MagickRemoveImageProfile :: proc(wand: ^MagickWand, name: cstring, length: ^c.size_t) -> ^c.uchar ---
+
+    MagickSetSeed :: proc(seed: c.ulong) ---
 }

@@ -12,7 +12,7 @@ m_exception :: proc(t: ^testing.T, wand: ^mgck.MagickWand, loc := #caller_locati
     out := mgck.MagickGetException(wand, &exception)
 
     if exception != .UndefinedException {
-        log.log(.Error, exception,  out)
+        log.log(.Error, exception, out, loc)
         mgck.MagickRelinquishMemory(&out)
         testing.fail(t, loc)
     }
@@ -20,7 +20,7 @@ m_exception :: proc(t: ^testing.T, wand: ^mgck.MagickWand, loc := #caller_locati
 
 // https://imagemagick.org/MagickWand/logo_1.htm
 @(test)
-wand_logo_convert_test :: proc(t: ^testing.T) {
+logo_convert :: proc(t: ^testing.T) {
     mgck.MagickWandGenesis()
     defer mgck.MagickWandTerminus()
 
@@ -38,7 +38,7 @@ wand_logo_convert_test :: proc(t: ^testing.T) {
 
 // https://imagemagick.org/MagickWand/extent.htm
 @(test)
-wand_extent_test :: proc(t: ^testing.T) {
+extent :: proc(t: ^testing.T) {
     mgck.MagickWandGenesis()
     defer mgck.MagickWandTerminus()
 
@@ -74,7 +74,7 @@ wand_extent_test :: proc(t: ^testing.T) {
 
 // https://imagemagick.org/MagickWand/floodfill.htm
 @(test)
-wand_floodfill_test :: proc(t: ^testing.T) {
+wand_floodfill :: proc(t: ^testing.T) {
     mgck.MagickWandGenesis() 
     defer mgck.MagickWandTerminus()
 
@@ -100,4 +100,41 @@ wand_floodfill_test :: proc(t: ^testing.T) {
 
     mgck.MagickWriteImage(wand, "./out/floodfilled_bill.png")
     m_exception(t, wand)
+}
+
+// https://imagemagick.org/MagickWand/reflect.htm
+@(test)
+reflect :: proc(t: ^testing.T) {
+    mgck.MagickWandGenesis() 
+    defer mgck.MagickWandTerminus()
+
+    wand := mgck.NewMagickWand()
+    defer mgck.DestroyMagickWand(wand)
+
+    gradient_wand := mgck.NewMagickWand()
+    defer mgck.DestroyMagickWand(gradient_wand)
+
+    mgck.MagickReadImage(wand, "./res/bill.png")
+    w := mgck.MagickGetImageWidth(wand)
+    h := mgck.MagickGetImageHeight(wand)
+
+    mgck.MagickSetImageAlphaChannel(wand, .DeactivateAlphaChannel)
+
+    reflection_wand := mgck.CloneMagickWand(wand)
+    defer mgck.DestroyMagickWand(reflection_wand)
+
+    mgck.MagickResizeImage(reflection_wand, w, h / 2, .LanczosFilter)
+    mgck.MagickFlipImage(reflection_wand)
+
+    mgck.MagickSetSize(gradient_wand, w, h / 2)
+    mgck.MagickReadImage(gradient_wand, "gradient:white-black")
+
+    mgck.MagickCompositeImage(reflection_wand, gradient_wand, .CopyAlphaCompositeOp, .MagickFalse, 0, 0)
+    mgck.MagickAddImage(wand, reflection_wand)
+
+    mgck.MagickSetFirstIterator(wand)
+    output_wand := mgck.MagickAppendImages(wand, .MagickTrue)
+    defer mgck.DestroyMagickWand(output_wand)
+
+    mgck.MagickWriteImage(output_wand, "./out/bill_reflect.png")
 }
