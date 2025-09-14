@@ -27,7 +27,7 @@ when ODIN_OS == .Windows {
     MagickMutexType :: c.size_t
     MagickThreadType :: c.int
 
-     // TODO: verify this is correct
+    // TODO: verify this is correct
     when ODIN_ARCH == .amd64 {
         LongDoubleByteSize :: 16
     } else when ODIN_ARCH == .i386 {
@@ -378,7 +378,6 @@ ChannelStatistics :: struct {
     // https://github.com/ImageMagick/ImageMagick/blob/fad6becfb5626be94553aa5a78034c017226aba4/MagickCore/statistic.h#L50
     _unused: [LongDoubleByteSize * 5]u8
 }
-
 
 // MagickCore/monitor.h
 MagickProgressMonitor :: #type ^proc(cstring, MagickOffsetType, MagickSizeType, rawptr)
@@ -1705,6 +1704,23 @@ foreign lib {
     // MagickCore/option.h
     ParseChannelOption :: proc(channels: cstring) -> c.ssize_t --- 
 
+    // MagickCore/property.h
+    InterpretImageProperties :: proc(image_info: ^ImageInfo, image: ^Image, embed_text: cstring, exception: ^ExceptionInfo) -> cstring ---
+    RemoveImageProperty :: proc(image: ^Image, property: cstring) -> cstring --- 
+
+    GetNextImageProperty :: proc(image: ^Image) -> cstring ---
+    GetImageProperty :: proc(image: ^Image, property: cstring, exception: ^ExceptionInfo) -> cstring ---
+    GetMagickProperty :: proc(image_info: ^ImageInfo, image: ^Image, property: cstring, exception: ^ExceptionInfo) -> cstring ---
+
+    CloneImageProperties :: proc(image: ^Image, clone_image: ^Image) -> MagickBooleanType ---
+    DefineImageProperty :: proc(image: ^Image, property: cstring, exception: ^ExceptionInfo) -> MagickBooleanType ---
+    DeleteImageProperty :: proc(image: ^Image, property: cstring) -> MagickBooleanType ---
+    // TODO: bind FormatImageProperty(Image *,const char *,const char *,...)
+    SetImageProperty :: proc(image: ^Image, property: cstring, value: cstring, exception: ^ExceptionInfo) -> MagickBooleanType ---
+
+    DestroyImageProperties :: proc(image: ^Image) ---
+    ResetImagePropertyIterator :: proc(image: ^Image) ---
+
     // MagickWand
     // MagickWand/MagickWand.h
     MagickGetException :: proc(wand: ^MagickWand, severity: ^ExceptionType) -> cstring ---
@@ -2190,7 +2206,7 @@ foreign lib {
     MagickSetImageProperty :: proc(wand: ^MagickWand, property: cstring, value: cstring) -> MagickBooleanType ---
     MagickSetInterlaceScheme :: proc(wand: ^MagickWand, interlace_scheme: InterlaceType) -> MagickBooleanType ---
     MagickSetInterpolateMethod :: proc(wand: ^MagickWand, method: PixelInterpolateMethod) -> MagickBooleanType ---
-    MagickSetOption :: proc(wand: ^MagickWand, value: cstring) -> MagickBooleanType ---
+    MagickSetOption :: proc(wand: ^MagickWand, property: cstring, value: cstring) -> MagickBooleanType ---
     MagickSetOrientation :: proc(wand: ^MagickWand, orientation: OrientationType) -> MagickBooleanType ---
     MagickSetPage :: proc(wand: ^MagickWand, width: c.size_t, height: c.size_t, x: c.ssize_t, y: c.ssize_t) -> MagickBooleanType ---
     MagickSetPassphrase :: proc(wand: ^MagickWand, passphrase: cstring) -> MagickBooleanType ---
