@@ -29,7 +29,7 @@ logo_convert :: proc(t: ^testing.T) {
 
     testing.expect(t, wand != nil)
 
-    mgck.MagickReadImage(wand, "./res/odin.png")
+    mgck.MagickReadImage(wand, "logo:")
     m_exception(t, wand)
 
     mgck.MagickWriteImage(wand, "./out/logo_reencoded.jpg")
@@ -53,7 +53,7 @@ extent :: proc(t: ^testing.T) {
     mgck.PixelSetColor(pixel_wand, "blue")
     m_exception(t, wand)
 
-    mgck.MagickReadImage(wand, "./res/odin.png")
+    mgck.MagickReadImage(wand, "logo:")
     m_exception(t, wand)
 
     w := mgck.MagickGetImageWidth(wand)
@@ -87,18 +87,18 @@ wand_floodfill :: proc(t: ^testing.T) {
     bc_wand := mgck.NewPixelWand()
     defer mgck.DestroyPixelWand(bc_wand)
 
-    mgck.MagickReadImage(wand, "./res/bill.png")
+    mgck.MagickReadImage(wand, "logo:")
     m_exception(t, wand)
 
-    mgck.PixelSetColor(fc_wand, "blue")
-    mgck.PixelSetColor(bc_wand, "#00000000")
+    mgck.PixelSetColor(fc_wand, "none")
+    mgck.PixelSetColor(bc_wand, "white")
     m_exception(t, wand)
 
     channel := mgck.ParseChannelOption("rgba")
     mgck.MagickFloodfillPaintImage(wand, fc_wand, 20, bc_wand, 0, 0, .MagickFalse)
     m_exception(t, wand)
 
-    mgck.MagickWriteImage(wand, "./out/floodfilled_bill.png")
+    mgck.MagickWriteImage(wand, "./out/logo_paintflood.png")
     m_exception(t, wand)
 }
 
@@ -114,7 +114,7 @@ reflect :: proc(t: ^testing.T) {
     gradient_wand := mgck.NewMagickWand()
     defer mgck.DestroyMagickWand(gradient_wand)
 
-    mgck.MagickReadImage(wand, "./res/bill.png")
+    mgck.MagickReadImage(wand, "logo:")
     w := mgck.MagickGetImageWidth(wand)
     h := mgck.MagickGetImageHeight(wand)
 
@@ -136,5 +136,5 @@ reflect :: proc(t: ^testing.T) {
     output_wand := mgck.MagickAppendImages(wand, .MagickTrue)
     defer mgck.DestroyMagickWand(output_wand)
 
-    mgck.MagickWriteImage(output_wand, "./out/bill_reflect.png")
+    mgck.MagickWriteImage(output_wand, "./out/logo_reflect.png")
 }

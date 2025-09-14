@@ -25,9 +25,9 @@ formats_test :: proc(t: ^testing.T) {
     for i in 0 ..< formats {
         info := info_list[i]
         name := strings.concatenate({string(info.name), (mgck.GetMagickBlobSupport(info) == .MagickTrue) ? "*" : ""}, context.temp_allocator)
-        caps := (info_list[i].encoder != nil) ? "r" : ""
-        caps = strings.concatenate({caps, (info_list[i].decoder != nil) ? "w" : ""}, context.temp_allocator)
-        caps = strings.concatenate({caps, (mgck.GetMagickAdjoin(info_list[i]) != .MagickFalse) ? "+" : ""}, context.temp_allocator)
+        caps := (info.encoder != nil) ? "r" : ""
+        caps = strings.concatenate({caps, (info.decoder != nil) ? "w" : ""}, context.temp_allocator)
+        caps = strings.concatenate({caps, (mgck.GetMagickAdjoin(info) != .MagickFalse) ? "+" : ""}, context.temp_allocator)
         fmt.println(name, info.magick_module, caps)
         free_all(context.temp_allocator)
     }
