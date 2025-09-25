@@ -10,7 +10,7 @@ import mgck "../"
 
 // (Prints every available format)
 // A slight recreation of https://github.com/ImageMagick/ImageMagick/blob/4f2fb31cd7e197fde90291bcc0c300f68c4b2d0f/MagickCore/magick.c#L1185
-// @(test)
+//@(test)
 formats_test :: proc(t: ^testing.T) {
     path := strings.clone_to_cstring(os.args[0])
     defer delete(path)
