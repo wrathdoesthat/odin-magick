@@ -29,7 +29,7 @@ when ODIN_OS == .Windows {
     // TODO: apparently 8 on MSVC but im not really sure
     LongDoubleByteSize :: 8
 } else when ODIN_OS == .Linux {
-    @(export) foreign import lib {"system:MagickCore-7.Q16HDRI"} 
+    @(export) foreign import magick_core {"system:MagickCore-7.Q16HDRI"} 
     when !DISABLE_MAGICK_WAND {
         @(export) foreign import magick_wand { "system:MagickWand-7.Q16HDRI"}
     }
