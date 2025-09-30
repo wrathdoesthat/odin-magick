@@ -1025,6 +1025,35 @@ MagickInfo :: struct {
     client_data: rawptr
 }
 
+// MagickCore/string_.h
+StringInfo :: struct {
+    path: cstring,
+    datum: ^c.uchar,
+    length, signature: c.size_t,
+    name: cstring
+}
+
+// MagickCore/configure.h
+ConfigureInfo :: struct {
+    path, name, value: cstring,
+    exempt, stealth: MagickBooleanType,
+    signature: c.size_t
+}
+
+// MagickCore/linked-list-private.h
+ElementInfo :: struct {
+    value: rawptr,
+    next: ^ElementInfo
+}
+
+// MagickCore/linked-list.c
+LinkedListInfo :: struct {
+    capacity, elements: c.size_t,
+    head, tail, next: ^ElementInfo,
+    semaphore: ^SemaphoreInfo,
+    signature: c.size_t
+}
+
 // MagickCore/type.h
 StretchType :: enum c.int {
     UndefinedStretch,
@@ -1216,6 +1245,13 @@ DrawInfo :: struct {
     id: cstring,
     word_break: WordBreakType,
     image_info: ^ImageInfo
+}
+
+TypeMetric :: struct {
+    pixels_per_em: PointInfo,
+    ascent, descent, width, height, max_advance, underline_position, underline_thickness : c.double,
+    bounds: SegmentInfo,
+    origin: PointInfo
 }
 
 // MagickCore/morphology.h

@@ -2,10 +2,18 @@ package odin_magick
 
 import "core:c"
 
+/* 
+    TODO LIST:
+    blob.h
+    cache.h
+    cipher.h
+    compress.h
+
+*/
+
 @(default_calling_convention="c")
 foreign magick_core { 
-    // MagickCore
-    // MagickCore/magick.h
+    // magick.h
     GetMagickList :: proc(pattern: cstring, number_formats: ^c.size_t, exception: ^ExceptionInfo) -> [^]^c.char ---
 
     GetMagickDescription :: proc(magick_info: ^MagickInfo) -> cstring ---
@@ -43,7 +51,132 @@ foreign magick_core {
     MagickCoreGenesis :: proc(path: cstring, establish_signal_handlers: MagickBooleanType) ---
     MagickCoreTerminus :: proc() ---
 
-    // MagickCore/exception.h
+
+    
+    // animate.h
+    AnimateImages :: proc(image_info: ^ImageInfo, images: ^Image, exception: ^ExceptionInfo) -> MagickBooleanType ---
+
+    // annotate.h
+    AnnotateImage :: proc(image: ^Image, draw_info: ^DrawInfo, exception: ^ExceptionInfo) -> MagickBooleanType ---
+    GetMultilineTypeMetrics :: proc(image: ^Image, draw_info: ^DrawInfo, metrics: ^TypeMetric, exception: ^ExceptionInfo) -> MagickBooleanType ---
+    GetTypeMetrics :: proc(image: ^Image, draw_info: ^DrawInfo, metrics: ^TypeMetric, exception: ^ExceptionInfo) -> MagickBooleanType ---
+
+    FormatMagickCaption :: proc(image: ^Image, draw_info: ^DrawInfo, split: MagickBooleanType, metrics: ^TypeMetric, caption: [^]cstring, exception: ^ExceptionInfo) -> c.size_t ---
+
+    // artifact.h
+    RemoveImageArtifact :: proc(image: ^Image, artifact: cstring) -> cstring ---
+
+    GetNextImageArtifact :: proc(image: ^Image) -> cstring ---
+    GetImageArtifact :: proc(image: ^Image, artifact: cstring) -> cstring ---
+
+    CloneImageArtifacts :: proc(image: ^Image, clone_image: ^Image) -> MagickBooleanType ---
+    DefineImageArtifact :: proc(image: ^Image, artifact: cstring) -> MagickBooleanType ---
+    DeleteImageArtifact :: proc(image: ^Image, artifact: cstring) -> MagickBooleanType ---
+    SetImageArtifact  :: proc(image: ^Image, artifact: cstring, value: cstring) -> MagickBooleanType ---
+
+    DestroyImageArtifacts :: proc(image: ^Image) ---
+    ResetImageArtifactIterator :: proc(image: ^Image) ---
+
+    // attribute.h
+    GetImageType :: proc(image: ^Image) -> ImageType ---
+    IdentifyImageGray :: proc(image: ^Image, exception: ^ExceptionInfo) -> ImageType ---
+    IdentifyImageType :: proc(image: ^Image, exception: ^ExceptionInfo) -> ImageType ---
+
+    IdentifyImageMonochrome :: proc(image: ^Image, exception: ^ExceptionInfo) -> MagickBooleanType ---
+    IsImageGray :: proc(image: ^Image) -> MagickBooleanType ---
+    IsImageMonochrome :: proc(image: ^Image) -> MagickBooleanType ---
+    IsImageOpaque :: proc(image: ^Image, exception: ^ExceptionInfo) -> MagickBooleanType ---
+    SetImageDepth :: proc(image: ^Image, depth: c.size_t, exception: ^ExceptionInfo) -> MagickBooleanType ---
+    SetImageType :: proc(image: ^Image, type: ImageType, exception: ^ExceptionInfo) -> MagickBooleanType ---
+
+    GetImageConvexHull :: proc(image: ^Image, number_vertices: ^c.size_t, exception: ^ExceptionInfo) -> ^PointInfo ---
+    GetImageMinimumBoundingBox :: proc(image: ^Image, number_vertices: ^c.size_t, exception: ^ExceptionInfo) -> ^PointInfo ---
+
+    GetImageDepth :: proc(image: ^Image, exception: ^ExceptionInfo) -> c.size_t ---
+    GetImageQuantumDepth :: proc(image: ^Image, constrain: MagickBooleanType) -> c.size_t ---
+
+    // channel.h
+    ChannelFxImage :: proc(image: ^Image, expression: cstring, exception: ^ExceptionInfo) -> ^Image ---
+    CombineImages :: proc(image: ^Image, colorspace: ColorspaceType, exception: ^ExceptionInfo) -> ^Image ---
+    SeparateImage :: proc(image: ^Image, channel_type: ChannelType, exception: ^ExceptionInfo) -> ^Image ---
+    SeparateImages :: proc(image: ^Image, exception: ^ExceptionInfo) -> ^Image ---
+
+    GetImageAlphaChannel :: proc(image: ^Image) -> MagickBooleanType ---
+    SetImageAlphaChannel :: proc(image: ^Image, alpha_type: AlphaChannelOption, exception: ^ExceptionInfo) -> MagickBooleanType ---
+    
+    // cipher.h
+    DecipherImage :: proc(image: ^Image, passphrase: cstring, exception: ^ExceptionInfo) -> MagickBooleanType ---
+    EncipherImage :: proc(image: ^Image, passphrase: cstring, exception: ^ExceptionInfo) -> MagickBooleanType ---
+    PasskeyDecipherImage :: proc(image: ^Image, passkey: ^StringInfo, exception: ^ExceptionInfo) -> MagickBooleanType ---
+    PasskeyEncipherImage :: proc(image: ^Image, passkey: ^StringInfo, exception: ^ExceptionInfo) -> MagickBooleanType ---
+    
+    // client.h
+    GetClientPath :: proc() -> cstring ---
+    GetClientName :: proc() -> cstring ---
+    SetClientName :: proc(name: cstring) -> cstring ---
+    SetClientPath :: proc(path: cstring) -> cstring ---
+
+    // color.h
+    GetColorList :: proc(pattern: cstring, number_colors: ^c.size_t, exception: ^ExceptionInfo) -> [^]cstring ---
+
+    GetColorInfo :: proc(name: cstring, exception: ^ExceptionInfo) -> ^ColorInfo ---
+    GetColorInfoList :: proc(pattern: cstring, number_colors: ^c.size_t, exception: ^ExceptionInfo) -> [^]^ColorInfo ---
+
+    IsEquivalentImage :: proc(image: ^Image, target_iamge: ^Image, x_offset: ^c.ssize_t, y_offset: ^c.ssize_t, exception: ^ExceptionInfo) -> MagickBooleanType ---
+    ListColorInfo :: proc(file: ^c.FILE, exception: ^ExceptionInfo) -> MagickBooleanType ---
+    QueryColorCompliance :: proc(name: cstring, compliance: ComplianceType, color: ^PixelInfo, exception: ^ExceptionInfo) -> MagickBooleanType ---
+    QueryColorname :: proc(image: ^Image, color: ^PixelInfo, compliance: ComplianceType, name: cstring, exception: ^ExceptionInfo) -> MagickBooleanType ---
+
+    ConcatenateColorComponent :: proc(pixel: ^PixelInfo, channel: PixelChannel, compliance: ComplianceType, tuple: cstring) ---
+    GetColorTuple :: proc(pixel: ^PixelInfo, hex: MagickBooleanType, tuple: cstring) ---
+
+    // colormap.h
+    AcquireImageColormap :: proc(image: ^Image, colors: c.size_t, exception: ^ExceptionInfo) -> MagickBooleanType ---
+    CycleColormapImage :: proc(image: ^Image, displace: c.ssize_t, exception: ^ExceptionInfo) -> MagickBooleanType ---
+    SortColormapByIntensity :: proc(image: ^Image, exception: ^ExceptionInfo) -> MagickBooleanType ---
+
+    // colorspace.h
+    GetImageColorspaceType :: proc(image: ^Image, exception: ^ExceptionInfo) -> ColorspaceType ---
+
+    SetImageColorspace :: proc(image: ^Image, colorspace: ColorspaceType, exception: ^ExceptionInfo) -> MagickBooleanType ---
+    SetImageGray :: proc(image: ^Image, exception: ^ExceptionInfo) -> MagickBooleanType ---
+    SetImageMonochrome :: proc(image: ^Image, exception: ^ExceptionInfo) -> MagickBooleanType ---
+    TransformImageColorspace :: proc(image: ^Image, colorspace: ColorspaceType, exception: ^ExceptionInfo) -> MagickBooleanType ---
+
+    // compare.h
+    GetImageDistortions :: proc(image: ^Image, reconstruct_image: ^Image, metric: MetricType, exception: ^ExceptionInfo) -> ^c.double ---
+
+    CompareImages :: proc(image: ^Image, reconstruct_image: ^Image, metric: MetricType, distortion: ^c.double, exception: ^ExceptionInfo) -> ^Image ---
+    SimilarityImage :: proc(image: ^Image, reconstruct: ^Image, metric: MetricType, similarity_threshold: c.double, offset: ^RectangleInfo, similarity_metric: ^c.double, exception: ^ExceptionInfo) -> ^Image ---
+
+    GetImageDistortion :: proc(image: ^Image, reconstruct_image: ^Image, metric: MetricType, exception: ^ExceptionInfo) -> MagickBooleanType ---
+    IsImagesEqual :: proc(image: ^Image, reconstruct_image: ^Image, exception: ^ExceptionInfo) -> MagickBooleanType ---
+    SetImageColorMetric :: proc(image: ^Image, reconstruct_image: ^Image, exception: ^ExceptionInfo) -> MagickBooleanType ---
+
+    // composite.h
+    CompositeImage :: proc(image: ^Image, composite: ^Image, compose: CompositeOperator, clip_to_self: MagickBooleanType, x_offset: c.ssize_t, y_offset: c.ssize_t, exception: ^ExceptionInfo) -> MagickBooleanType ---
+    TextureImage :: proc(image: ^Image, texture: ^Image, exception: ^ExceptionInfo) -> MagickBooleanType ---
+
+    // configure.h
+    GetConfigureList :: proc(pattern: cstring, number_options: ^c.size_t, exception: ^ExceptionInfo) -> [^]cstring ---
+    GetConfigureOption :: proc(option: cstring) -> cstring ---
+
+    GetConfigureValue :: proc(configure_info: ^ConfigureInfo) -> cstring ---
+
+    GetConfigureInfo :: proc(name: cstring, exception: ^ExceptionInfo) -> cstring ---
+    GetConfigureInfoList :: proc(pattern: cstring, number_options: ^c.size_t, exception: ^ExceptionInfo) -> [^]cstring ---
+
+    DestroyConfigureOptions :: proc(options: ^LinkedListInfo) -> ^LinkedListInfo ---
+    GetConfigurePaths :: proc(filename: cstring, exception: ^ExceptionInfo) -> ^LinkedListInfo ---
+    GetConfigureOptions :: proc(filename: cstring, exception: ^ExceptionInfo) -> ^LinkedListInfo ---
+    
+    ListConfigureInfo :: proc(file: ^c.FILE, exception: ^ExceptionInfo) -> MagickBooleanType ---
+
+    // constitute.h
+    ConstituteImage :: proc(columns: c.size_t, rows: c.size_t, map_: cstring, storage: StorageType, pixels: rawptr, exception: ^ExceptionInfo) -> ^Image ---
+
+
+    // exception.h
     GetExceptionMessage :: proc(error: c.int) -> cstring ---
     GetLocaleExceptionMessage :: proc(severity: ExceptionType, tag: cstring) -> cstring ---
 
@@ -64,10 +197,10 @@ foreign magick_core {
     MagickFatalError :: proc(error: ExceptionType, reason: cstring, description: cstring) ---
     MagickWarning :: proc(error: ExceptionType, reason: cstring, description: cstring) ---
 
-    // MagickCore/option.h
+    // option.h
     ParseChannelOption :: proc(channels: cstring) -> c.ssize_t --- 
 
-    // MagickCore/property.h
+    // property.h
     InterpretImageProperties :: proc(image_info: ^ImageInfo, image: ^Image, embed_text: cstring, exception: ^ExceptionInfo) -> cstring ---
     RemoveImageProperty :: proc(image: ^Image, property: cstring) -> cstring --- 
 

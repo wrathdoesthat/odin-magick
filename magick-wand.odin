@@ -70,7 +70,6 @@ when !DISABLE_MAGICK_WAND {
 
     @(default_calling_convention="c")
     foreign magick_wand { 
-        // MagickWand
         // MagickWand/MagickWand.h
         MagickGetException :: proc(wand: ^MagickWand, severity: ^ExceptionType) -> cstring ---
         
