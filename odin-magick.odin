@@ -244,6 +244,22 @@ StreamType :: enum c.int {
     CustomStream
 }
 
+// MagickCore/stream.c
+StreamInfo :: struct {
+    image_info: ^ImageInfo,
+    image: ^Image,
+    stream: ^Image,
+    quantum_info: ^QuantumInfo,
+    map_: cstring,
+    storage_type: StorageType,
+    pixels: ^c.uchar,
+    extract_info: RectangleInfo,
+    y: c.ssize_t,
+    exception: ^ExceptionInfo,
+    client_data: rawptr,
+    signature: c.size_t
+}
+
 // MagickCore/stream.h
 StreamHandler :: #type ^proc(^Image, rawptr, c.size_t) -> c.size_t 
 
@@ -299,6 +315,10 @@ CustomStreamInfo :: struct {
 }
 
 // MagickCore/statistic.h
+MaximumNumberOfImageMoments :: 8
+MaximumNumberOfPerceptualColorspaces :: 6
+MaximumNumberOfPerceptualHashes :: 7
+
 MagickEvaluateOperator :: enum c.int {
     UndefinedEvaluateOperator,
     AbsEvaluateOperator,
@@ -379,6 +399,20 @@ ChannelStatistics :: struct {
     // TODO: figure out how to make this actually right
     // https://github.com/ImageMagick/ImageMagick/blob/fad6becfb5626be94553aa5a78034c017226aba4/MagickCore/statistic.h#L50
     _unused: [LongDoubleByteSize * 5]u8
+}
+
+ChannelMoments :: struct {
+    invariant: [MaximumNumberOfImageMoments+1]c.double,
+    centroid, ellipse_axis: PointInfo,
+    ellipse_angle, elllipse_eccentricity, ellipse_intensity: c.double
+}
+
+ChannelPerceptualHash :: struct {
+    srgb_hu_phash, hclp_hu_phash: [MaximumNumberOfImageMoments+1]c.double,
+    number_colorspace: c.size_t,
+    colorspace: [MaximumNumberOfPerceptualColorspaces+1]ColorspaceType,
+    phash: [MaximumNumberOfPerceptualColorspaces+1][+MaximumNumberOfImageMoments+1]c.double,
+    number_channels: c.size_t
 }
 
 // MagickCore/monitor.h
@@ -496,12 +530,8 @@ LayerMethod :: enum c.int {
     TrimBoundsLayer
 }
 
-// MagickCore/quantum.h
-EndianType :: enum c.int {
-    UndefinedEndian,
-    LSBEndian,
-    MSBEndian
-}
+
+
 
 // MagickCore/feature.h
 ChannelFeatures :: struct {
@@ -701,6 +731,38 @@ CompositeOperator :: enum c.int {
     RMSECompositeOp,
     SaliencyBlendCompositeOp,
     SeamlessBlendCompositeOp
+}
+
+GeometryFlags :: enum c.int {
+    NoValue = 0x0000,
+    XValue = 0x0001,
+    XiValue = 0x0001,
+    YValue = 0x0002,
+    PsiValue = 0x0002,
+    WidthValue = 0x0004,
+    RhoValue = 0x0004,
+    HeightValue = 0x0008,
+    SigmaValue = 0x0008,
+    ChiValue = 0x0010,
+    XiNegative = 0x0020,
+    XNegative = 0x0020,
+    PsiNegative = 0x0040,
+    YNegative = 0x0040,
+    ChiNegative = 0x0080,
+    PercentValue = 0x1000,       /* '%'  percentage of something */
+    AspectValue = 0x2000,        /* '!'  resize no-aspect - special use flag */
+    NormalizeValue = 0x2000,     /* '!'  ScaleKernelValue() in morphology.c */
+    LessValue = 0x4000,          /* '<'  resize smaller - special use flag */
+    GreaterValue = 0x8000,       /* '>'  resize larger - spacial use flag */
+    MinimumValue = 0x10000,      /* '^'  special handling needed */
+    CorrelateNormalizeValue = 0x10000, /* '^' see ScaleKernelValue() */
+    AreaValue = 0x20000,         /* '@'  resize to area - special use flag */
+    DecimalValue = 0x40000,      /* '.'  floating point numbers found */
+    SeparatorValue = 0x80000,    /* 'x'  separator found */
+    AspectRatioValue = 0x100000, /* '~'  special handling needed */
+    AlphaValue = 0x200000,       /* '/'  alpha */
+    MaximumValue = 0x400000,     /* '#'  special handling needed */
+    AllValues = 0x7fffffff
 }
 
 // MagickCore/resource_.h
@@ -1078,6 +1140,28 @@ StyleType :: enum c.int {
     BoldStyle  /* deprecated */
 }
 
+TypeInfo :: struct {
+    face: c.size_t,
+    path, name, description, family: cstring,
+    style: StyleType,
+    weight: c.size_t,
+    encoding, foundry, formats, metrics, glyphs: cstring,
+    stealth: MagickBooleanType,
+    signature: c.size_t
+}
+
+// MagickCore/cache-private.h
+NexusInfo :: struct {
+    mapped: MagickBooleanType,
+    region: RectangleInfo,
+    length: MagickSizeType,
+    cache, pixels: ^Quantum,
+    authentic_pixel_cache: MagickBooleanType,
+    metacontent: rawptr,
+    signature: c.size_t,
+    virtual_nexus: ^NexusInfo
+}
+
 // MagickCore/cache-view.h
 VirtualPixelMethod :: enum c.int {
     UndefinedVirtualPixelMethod,
@@ -1097,6 +1181,101 @@ VirtualPixelMethod :: enum c.int {
     HorizontalTileEdgeVirtualPixelMethod,
     VerticalTileEdgeVirtualPixelMethod,
     CheckerTileVirtualPixelMethod
+}
+
+CacheView :: struct {
+    image: ^Image,
+    virtual_pixel_method: VirtualPixelMethod,
+    number_threads: c.size_t,
+    nexus_info: ^^NexusInfo,
+    debug: MagickBooleanType,
+    signature: c.size_t
+}
+
+// MagickCore/decorate.h
+FrameInfo :: struct {
+    width, height: c.size_t,
+    x, y, inner_evel, outer_bevel : c.ssize_t
+}
+
+// MagickCore/delegate.h
+DelegateInfo :: struct {
+    path, decode, encode, commands: cstring,
+    mode: c.ssize_t,
+    thread_support, spawn, stealth: MagickBooleanType,
+    semaphore: ^SemaphoreInfo,
+    signature: c.size_t
+}
+
+// MagickCore/quantize.h
+QuantizeInfo :: struct {
+    number_colors: c.size_t,
+    tree_depth: c.size_t,
+    colorspace: ColorspaceType,
+    dither_method: DitherMethod,
+    measure_error: MagickBooleanType,
+    signature: c.size_t
+}
+
+// MagickCore/quantum.h
+EndianType :: enum c.int {
+    UndefinedEndian,
+    LSBEndian,
+    MSBEndian
+}
+
+QuantumFormatType :: enum c.int {
+    UndefinedQuantumFormat,
+    FloatingPointQuantumFormat,
+    SignedQuantumFormat,
+    UnsignedQuantumFormat
+}
+
+QuantumAlphaType :: enum c.int {
+    UndefinedQuantumAlpha,
+    AssociatedQuantumAlpha,
+    DisassociatedQuantumAlpha
+}
+
+// MagickCore/quantum-private.h
+QuantumState :: struct {
+    inverse_scale: c.double,
+    pixel: c.uint,
+    bits: c.size_t,
+    mask: ^c.uint
+}
+
+QuantumInfo :: struct {
+    depth, quantum: c.size_t,
+    format: QuantumFormatType, 
+    minimum, maximum, scale: c.double,
+    pad: c.size_t,
+    min_is_white, pack: MagickBooleanType,
+    alpha_type: QuantumAlphaType,
+    number_threads: c.size_t,
+    pixels: ^^MemoryInfo,
+    extent: c.size_t,
+    endian: EndianType,
+    state: QuantumState,
+    semaphore: ^SemaphoreInfo,
+    signature: c.size_t,
+    meta_channel: c.size_t
+}
+
+// MagickCore/memory.c
+VirtualMemoryType :: enum c.int {
+    UndefinedVirtualMemory,
+    AlignedVirtualMemory,
+    MapVirtualMemory,
+    UnalignedVirtualMemory
+}
+
+MemoryInfo :: struct {
+    filename: [MagickPathExtent]c.char,
+    type: VirtualMemoryType,
+    length: c.size_t,
+    blob: rawptr,
+    signature: c.size_t
 }
 
 // MagickCore/draw.h
@@ -1247,11 +1426,371 @@ DrawInfo :: struct {
     image_info: ^ImageInfo
 }
 
+PrimitiveType :: enum c.int {
+    UndefinedPrimitive,
+    AlphaPrimitive,
+    ArcPrimitive,
+    BezierPrimitive,
+    CirclePrimitive,
+    ColorPrimitive,
+    EllipsePrimitive,
+    ImagePrimitive,
+    LinePrimitive,
+    PathPrimitive,
+    PointPrimitive,
+    PolygonPrimitive,
+    PolylinePrimitive,
+    RectanglePrimitive,
+    RoundRectanglePrimitive,
+    TextPrimitive
+}
+
+PaintMethod :: enum c.int {
+    UndefinedMethod,
+    PointMethod,
+    ReplaceMethod,
+    FloodfillMethod,
+    FillToBorderMethod,
+    ResetMethod
+}
+
 TypeMetric :: struct {
     pixels_per_em: PointInfo,
     ascent, descent, width, height, max_advance, underline_position, underline_thickness : c.double,
     bounds: SegmentInfo,
     origin: PointInfo
+}
+
+PrimitiveInfo :: struct {
+    point: PointInfo,
+    coordinates: c.size_t,
+    primitive: PrimitiveType,
+    method: PaintMethod,
+    text: cstring,
+    closed_subpath: MagickBooleanType
+}
+
+// log.c
+LogHandlerType :: enum c.int {
+    UndefinedHandler = 0x0000,
+    NoHandler = 0x0000,
+    ConsoleHandler = 0x0001,
+    StdoutHandler = 0x0002,
+    StderrHandler = 0x0004,
+    FileHandler = 0x0008,
+    DebugHandler = 0x0010,
+    EventHandler = 0x0020,
+    MethodHandler = 0x0040
+}
+
+LogInfo :: struct {
+    event_mask: LogEventType,
+    handler_mask: LogHandlerType,
+    path, name, filename, format: string,
+    generations: c.size_t,
+    file: ^c.FILE,
+    append, stealth: MagickBooleanType,
+    limit: MagickSizeType,
+    timer: TimerInfo,
+    method: MagickLogMethod,
+    event_semaphore: ^SemaphoreInfo,
+    signature: c.size_t
+}
+
+// log.h
+LogEventType :: enum c.int {
+    UndefinedEvents = 0x000000,
+    NoEvents = 0x00000,
+    AccelerateEvent = 0x00001,
+    AnnotateEvent = 0x00002,
+    BlobEvent = 0x00004,
+    CacheEvent = 0x00008,
+    CoderEvent = 0x00010,
+    ConfigureEvent = 0x00020,
+    DeprecateEvent = 0x00040,
+    DrawEvent = 0x00080,
+    ExceptionEvent = 0x00100,   /* Log Errors and Warnings immediately */
+    ImageEvent = 0x00200,
+    LocaleEvent = 0x00400,
+    ModuleEvent = 0x00800,      /* Log coder and filter modules */
+    PixelEvent = 0x01000,
+    PolicyEvent = 0x02000,
+    ResourceEvent = 0x04000,
+    TraceEvent = 0x08000,
+    TransformEvent = 0x10000,
+    UserEvent = 0x20000,
+    WandEvent = 0x40000,        /* Log MagickWand */
+    X11Event = 0x80000,
+    CommandEvent = 0x100000,    /* Log Command Processing (CLI & Scripts) */
+    AllEvents = 0x7fffffff
+}
+
+MagickLogMethod :: #type proc(LogEventType, cstring)
+
+// MagickCore/cache.h
+CacheType :: enum c.int {
+    UndefinedCache,
+    DiskCache,
+    DistributedCache,
+    MapCache,
+    MemoryCache,
+    PingCache
+}
+
+// MagickCore/matrix.c
+MatrixInfo :: struct {
+    type: CacheType,
+    columns, rows, stride: c.size_t,
+    length: MagickSizeType,
+    mapped, synchronize: MagickBooleanType,
+    path: [MagickPathExtent]c.char,
+    file: c.int,
+    elements: rawptr,
+    semaphore: ^SemaphoreInfo,
+    signature: c.size_t
+}
+
+// MagickCore/signature.c
+SignatureInfo :: struct {
+    digestsize, blocksize: c.uint,
+    digest, message: ^StringInfo,
+    accumulator: ^c.uint,
+    low_order, high_order: c.uint,
+    extent: c.size_t,
+    lsb_first: MagickBooleanType,
+    timestamp: libc.time_t,
+    signature: c.size_t
+}
+
+// MagickCore/random.c
+RandomInfo :: struct {
+    signature_info: ^SignatureInfo,
+    nonce, reservoir: ^StringInfo,
+    i: c.size_t,
+    seed: [4]MagickSizeType,
+    normalize: c.double,
+    secret_key: c.ulong,
+    protocol_major, protocol_minor: c.ushort,
+    semaphore: ^SemaphoreInfo,
+    timestamp: libc.time_t,
+    signature: c.size_t
+}
+
+// MagickCore/resample.c
+
+// TODO: figure out if used
+/* 
+    #if ! FILTER_DIRECT
+    #define WLUT_WIDTH 1024       /* size of the filter cache */
+    #endif
+*/
+WLUT_WIDTH :: 1024
+
+ResampleFilter :: struct {
+    view: ^CacheView,
+    image: ^Image,
+    exception: ^ExceptionInfo,
+    debug: MagickBooleanType,
+    image_area: c.ssize_t,
+    interpolate: PixelInterpolateMethod,
+    virtual_pixel: VirtualPixelMethod,
+    filter: FilterType,
+    limit_reached, do_interpolate, average_defined: MagickBooleanType,
+    average_pixel: PixelInfo,
+    A, B, C, Vlimit, Ulimit, Uwidth, slope: c.double,
+
+/* 
+    TODO: see above
+    #if FILTER_LUT
+    /* LUT of weights for filtered average in elliptical area */
+    double
+    filter_lut[WLUT_WIDTH];
+    #else
+    /* Use a Direct call to the filter functions */
+    ResizeFilter
+    *filter_def;
+
+    double
+    F;
+    #endif
+*/
+
+    filter_lut: [WLUT_WIDTH]c.double,
+    support: c.double,
+    signature: c.size_t
+}
+
+// MagickCore/resize-private.h
+ResizeWeightingFunctionType :: enum c.int {
+    BoxWeightingFunction = 0,
+    TriangleWeightingFunction,
+    CubicBCWeightingFunction,
+    HannWeightingFunction,
+    HammingWeightingFunction,
+    BlackmanWeightingFunction,
+    GaussianWeightingFunction,
+    QuadraticWeightingFunction,
+    JincWeightingFunction,
+    SincWeightingFunction,
+    SincFastWeightingFunction,
+    KaiserWeightingFunction,
+    WelchWeightingFunction,
+    BohmanWeightingFunction,
+    LagrangeWeightingFunction,
+    CosineWeightingFunction,
+    MagicKernelSharpWeightingFunction,
+    LastWeightingFunction
+}
+
+// MagickCore/resize.c
+ResizeFilter :: struct {
+    filter: proc(c.double, ^ResizeFilter),
+    window: proc(c.double, ^ResizeFilter),
+    support, window_support, scale, blur: c.double,
+    coeffiecient: [7]c.double,
+    filterWeightingType, windowWeightingType: ResizeWeightingFunctionType,
+    signature: c.size_t
+}
+
+// MagickCore/memory_.h
+AcquireMemoryHandler :: #type proc(size: c.size_t) -> rawptr
+DestroyMemoryHandler :: #type proc(memory: rawptr)
+ResizeMemoryHandler :: #type proc(memory: rawptr, size: c.size_t) -> rawptr
+
+// TODO: figure out what the parameters for this actually are
+AcquireAlignedMemoryHandler :: #type proc(c.size_t, c.size_t) -> rawptr
+RelinquishAlignedMemory :: #type proc(memory: rawptr)
+
+// MagickCore/option.h
+CommandOption :: enum c.int {
+    MagickUndefinedOptions = -1,
+    MagickAlignOptions = 0,
+    MagickAlphaChannelOptions,
+    MagickBooleanOptions,
+    MagickCacheOptions,
+    MagickChannelOptions,
+    MagickClassOptions,
+    MagickClipPathOptions,
+    MagickCoderOptions,
+    MagickColorOptions,
+    MagickColorspaceOptions,
+    MagickCommandOptions,
+    MagickComplexOptions,
+    MagickComplianceOptions,
+    MagickComposeOptions,
+    MagickCompressOptions,
+    MagickConfigureOptions,
+    MagickDataTypeOptions,
+    MagickDebugOptions,
+    MagickDecorateOptions,
+    MagickDelegateOptions,
+    MagickDirectionOptions,
+    MagickDisposeOptions,
+    MagickDistortOptions,
+    MagickDitherOptions,
+    MagickEndianOptions,
+    MagickEvaluateOptions,
+    MagickFillRuleOptions,
+    MagickFilterOptions,
+    MagickFontOptions,
+    MagickFontsOptions,
+    MagickFormatOptions,
+    MagickFunctionOptions,
+    MagickGradientOptions,
+    MagickGravityOptions,
+    MagickIntensityOptions,
+    MagickIntentOptions,
+    MagickInterlaceOptions,
+    MagickInterpolateOptions,
+    MagickKernelOptions,
+    MagickLayerOptions,
+    MagickLineCapOptions,
+    MagickLineJoinOptions,
+    MagickListOptions,
+    MagickLocaleOptions,
+    MagickLogEventOptions,
+    MagickLogOptions,
+    MagickMagicOptions,
+    MagickMethodOptions,
+    MagickMetricOptions,
+    MagickMimeOptions,
+    MagickModeOptions,
+    MagickModuleOptions,
+    MagickMorphologyOptions,
+    MagickNoiseOptions,
+    MagickOrientationOptions,
+    MagickPixelChannelOptions,
+    MagickPixelIntensityOptions,
+    MagickPixelMaskOptions,
+    MagickPixelTraitOptions,
+    MagickPolicyOptions,
+    MagickPolicyDomainOptions,
+    MagickPolicyRightsOptions,
+    MagickPreviewOptions,
+    MagickPrimitiveOptions,
+    MagickQuantumFormatOptions,
+    MagickResolutionOptions,
+    MagickResourceOptions,
+    MagickSparseColorOptions,
+    MagickStatisticOptions,
+    MagickStorageOptions,
+    MagickStretchOptions,
+    MagickStyleOptions,
+    MagickThresholdOptions,
+    MagickTypeOptions,
+    MagickValidateOptions,
+    MagickVirtualPixelOptions,
+    MagickWeightOptions,
+    MagickAutoThresholdOptions,
+    MagickToolOptions,
+    MagickCLIOptions,
+    MagickIlluminantOptions,
+    MagickWordBreakOptions,
+    MagickPagesizeOptions
+}
+
+ValidateType :: enum c.int {
+    UndefinedValidate,
+    NoValidate = 0x00000,
+    ColorspaceValidate = 0x00001,
+    CompareValidate = 0x00002,
+    CompositeValidate = 0x00004,
+    ConvertValidate = 0x00008,
+    FormatsDiskValidate = 0x00010,
+    FormatsMapValidate = 0x00020,
+    FormatsMemoryValidate = 0x00040,
+    IdentifyValidate = 0x00080,
+    ImportExportValidate = 0x00100,
+    MontageValidate = 0x00200,
+    StreamValidate = 0x00400,
+    MagickValidate = 0x00800,
+    AllValidate = 0x7fffffff
+}
+
+CommandOptionFlags :: enum c.int {
+    UndefinedOptionFlag       = 0x0000,  /* option flag is not in use */
+    ImageInfoOptionFlag       = 0x0001,  /* Setting stored in ImageInfo */
+    DrawInfoOptionFlag        = 0x0002,  /* Setting stored in DrawInfo */
+    QuantizeInfoOptionFlag    = 0x0004,  /* Setting stored in QuantizeInfo */
+    GlobalOptionFlag          = 0x0008,  /* Global Setting or Control */
+    SettingOptionFlags        = 0x000F,  /* mask any setting option */
+    NoImageOperatorFlag       = 0x0010,  /* Images not required operator */
+    SimpleOperatorFlag        = 0x0020,  /* Simple Image processing operator */
+    ListOperatorFlag          = 0x0040,  /* Multi-Image processing operator */
+    GenesisOptionFlag         = 0x0080,  /* MagickCommandGenesis() Only Option */
+    SpecialOptionFlag         = 0x0100,  /* Operator with Special Requirements EG: for specific CLI commands */
+    AlwaysInterpretArgsFlag   = 0x0400,  /* Always Interpret escapes in Args CF: "convert" compatibility mode */
+    NeverInterpretArgsFlag    = 0x0800,  /* Never Interpret escapes in Args EG: filename, or delayed escapes */
+    NonMagickOptionFlag       = 0x1000,  /* Option not used by Magick Command */
+    FireOptionFlag            = 0x2000,  /* Convert operation seq firing point */
+    DeprecateOptionFlag       = 0x4000,  /* Deprecate option (no code) */
+    ReplacedOptionFlag        = 0x8800   /* Replaced Option (but still works) */
+}
+
+OptionInfo :: struct {
+    mnemonic: cstring,
+    type, flags: c.ssize_t, 
+    stealth: MagickBooleanType
 }
 
 // MagickCore/morphology.h
@@ -1397,6 +1936,19 @@ MontageMode :: enum c.int {
     FrameMode,
     UnframeMode,
     ConcatenateMode
+}
+
+MontageInfo :: struct {
+    geometry, tile, title, frame, texture, font: cstring,
+    pointsize: c.double,
+    border_width: c.size_t,
+    shadow: MagickBooleanType,
+    alpha_color, background_color, border_color, fill, stroke: PixelInfo,
+    gravity: GravityType,
+    filename: [MagickPathExtent]c.char,
+    debug: MagickBooleanType,
+    signature: c.size_t,
+    matte_color: PixelInfo
 }
 
 // MagickCore/image.h
