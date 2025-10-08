@@ -12,6 +12,7 @@ import "core:c"
 import "core:c/libc"
 import "core:sys/windows"
 
+// Enable this to disable and not link the magickwand helper library
 DISABLE_MAGICK_WAND :: #config(DISABLE_MAGICK_WAND, false)
 
 when ODIN_OS == .Windows {
