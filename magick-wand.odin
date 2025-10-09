@@ -14,6 +14,8 @@ when !DISABLE_MAGICK_WAND {
         signature: c.size_t
     }
 
+    // test123
+
     // MagickWand/drawing-wand.c
     PathOperation :: enum c.int {
         PathDefaultOperation,
